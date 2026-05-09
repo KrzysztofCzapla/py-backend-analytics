@@ -1,0 +1,7 @@
+[project]
+name = "py-backend-analytics"
+version = "0.1.0"
+description = "easy-to-setup network analytics for python backends"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []

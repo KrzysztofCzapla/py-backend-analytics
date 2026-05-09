@@ -87,6 +87,3 @@ class SQLiteDBClient(AbstractDBClient):
         connection = sqlite3.connect(self.connection_string)
         yield connection
         connection.close()
-
-
-a = SQLiteDBClient(connection_string="mydb.sql")

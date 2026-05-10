@@ -7,5 +7,6 @@ T = TypeVar("T")
 
 
 class AbstractExtractor(ABC, Generic[T]):
+    @staticmethod
     @abstractmethod
-    def extract(self, request: T) -> RequestInfo: ...
+    def extract(request: T) -> RequestInfo: ...

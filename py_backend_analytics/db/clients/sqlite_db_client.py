@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import List
 
-from py_backend_analytics.db.abstract_db_client import AbstractDBClient
+from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 import sqlite3
 
 from py_backend_analytics.db.constants import DB_TABLE_NAME, DBColumns

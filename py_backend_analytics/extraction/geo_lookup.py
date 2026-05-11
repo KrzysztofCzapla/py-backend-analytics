@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 import maxminddb
 
-from constants import (
+from py_backend_analytics.extraction.constants import (
     TEMP_DIR_NAME,
     MMDB_FILE_NAME,
     GZ_FILE_NAME,

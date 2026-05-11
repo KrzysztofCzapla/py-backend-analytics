@@ -4,7 +4,7 @@ from typing import List
 from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 import sqlite3
 
-from py_backend_analytics.db.constants import DB_TABLE_NAME, DBColumns
+from py_backend_analytics.db.constants import DB_TABLE_NAME, DBColumns, DB_INDEX_SUFFIX
 from py_backend_analytics.db.models import Filters
 from py_backend_analytics.models import RequestInfo
 
@@ -66,11 +66,15 @@ class SQLiteDBClient(AbstractDBClient):
             cur.execute(
                 f"""CREATE TABLE {DB_TABLE_NAME}(
                         {DBColumns.id} INTEGER PRIMARY KEY,
-                        {DBColumns.location} TEXT NOT NULL,
+                        {DBColumns.location} TEXT NULL,
                         {DBColumns.page} TEXT NOT NULL,
-                        {DBColumns.source} TEXT NOT NULL,
+                        {DBColumns.source} TEXT NULL,
                         {DBColumns.datestamp} TEXT NOT NULL
                 ) STRICT"""
+            )
+            # datestamp will be the most used column when it comes to filtering
+            cur.execute(
+                f"""CREATE INDEX {DBColumns.datestamp}{DB_INDEX_SUFFIX} ON {DB_TABLE_NAME}({DBColumns.datestamp})"""
             )
 
     def db_table_exists(self) -> bool:

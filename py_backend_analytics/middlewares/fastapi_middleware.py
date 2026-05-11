@@ -1,7 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request
 
-from py_backend_analytics.db.registry import DB_CLIENTS
+from py_backend_analytics.db.registry import get_db_client
 from py_backend_analytics.extraction.extractors.fastapi_extractor import (
     FastAPIExtractor,
 )
@@ -12,10 +12,9 @@ from py_backend_analytics.models import RequestInfo
 class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, input_data: PyBackendAnalyticsInputData):
         super().__init__(app)
-        db_client_class = DB_CLIENTS.get(input_data.db_type)
-        if not db_client_class:
-            raise ValueError(f"Provided wrong DB type: {input_data.db_type}")
-        self.db_client = db_client_class(input_data.db_connection_string)
+        self.db_client = get_db_client(
+            input_data.db_connection_string, input_data.db_type
+        )
         self.excluded_endpoints = input_data.excluded_endpoints
         self.excluded_path_prefixes = input_data.excluded_path_prefixes
         self.logger = input_data.logger

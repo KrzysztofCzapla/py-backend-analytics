@@ -5,6 +5,7 @@ from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates, _TemplateResponse
 
+from py_backend_analytics.constants import PACKAGE_NAME
 from py_backend_analytics.db.registry import get_db_client
 from py_backend_analytics.input_data import PyBackendAnalyticsInputData
 
@@ -12,7 +13,7 @@ from py_backend_analytics.input_data import PyBackendAnalyticsInputData
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
 _TEMPLATES = Jinja2Templates(directory=_TEMPLATES_DIR)
-ANALYTICS_STATIC = "static"  # TODO change
+ANALYTICS_STATIC = PACKAGE_NAME
 
 
 async def fastapi_get_visualization_page(

@@ -1,11 +1,25 @@
 from dataclasses import dataclass
-from datetime import datetime
 
 
-@dataclass
-class Filters:
-    min_date: datetime | None = None
-    max_date: datetime | None = None
-    location: str | None = None
-    page: str | None = None
-    source: str | None = None
+@dataclass(frozen=True)
+class AnalyticsSummaryFields:
+    # root
+    ALL_TIME: str = "all_time"
+    LAST_MONTH: str = "last_month"
+    LAST_YEAR: str = "last_year"
+    RECENT_REQUESTS: str = "recent_requests"
+
+    # TimeRangeStats
+    TOP_COUNTRIES: str = "top_countries"
+    TOP_PAGES: str = "top_pages"
+    TOP_SOURCES: str = "top_sources"
+
+    # TopEntry
+    VALUE: str = "value"
+    COUNT: str = "count"
+
+    # RequestInfo
+    LOCATION: str = "location"
+    PAGE: str = "page"
+    SOURCE: str = "source"
+    DATESTAMP: str = "datestamp"

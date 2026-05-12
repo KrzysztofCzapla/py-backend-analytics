@@ -1,11 +1,11 @@
+from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
-from typing import List
 
-from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 import aiosqlite
 
+from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 from py_backend_analytics.db.constants import DB_TABLE_NAME, DBColumns, DB_INDEX_SUFFIX
-from py_backend_analytics.db.models import Filters
+from py_backend_analytics.db.models import AnalyticsSummaryFields as F
 from py_backend_analytics.models import RequestInfo
 
 
@@ -15,54 +15,73 @@ class SQLiteDBClient(AbstractDBClient):
             cur = await conn.cursor()
             await cur.execute(
                 f"""INSERT INTO {DB_TABLE_NAME}
-                    ({DBColumns.location}, {DBColumns.page}, {DBColumns.source}, {DBColumns.datestamp}) VALUES
-                    (?, ?, ?, ?)""",
+                    ({DBColumns.location}, {DBColumns.page}, {DBColumns.source}, {DBColumns.datestamp})
+                    VALUES (?, ?, ?, ?)""",
                 (model.location, model.page, model.source, model.datestamp),
             )
             await conn.commit()
 
-    async def read_request_info(
-        self, filters: Filters | None = None
-    ) -> List[RequestInfo]:
+    async def get_analytics_summary(self) -> dict:
         async with self._get_connection() as conn:
-            cur = await conn.cursor()
-            query = f"""SELECT
+            now = datetime.now(timezone.utc)
+
+            last_month = (now - timedelta(days=30)).isoformat()
+            last_year = (now - timedelta(days=365)).isoformat()
+
+            all_time = {
+                F.TOP_COUNTRIES: await self._get_top(conn, DBColumns.location),
+                F.TOP_PAGES: await self._get_top(conn, DBColumns.page),
+                F.TOP_SOURCES: await self._get_top(conn, DBColumns.source),
+            }
+
+            month_stats = {
+                F.TOP_COUNTRIES: await self._get_top(
+                    conn, DBColumns.location, last_month
+                ),
+                F.TOP_PAGES: await self._get_top(conn, DBColumns.page, last_month),
+                F.TOP_SOURCES: await self._get_top(conn, DBColumns.source, last_month),
+            }
+
+            year_stats = {
+                F.TOP_COUNTRIES: await self._get_top(
+                    conn, DBColumns.location, last_year
+                ),
+                F.TOP_PAGES: await self._get_top(conn, DBColumns.page, last_year),
+                F.TOP_SOURCES: await self._get_top(conn, DBColumns.source, last_year),
+            }
+
+            recent_query = f"""
+                SELECT
                     {DBColumns.location},
                     {DBColumns.page},
                     {DBColumns.source},
                     {DBColumns.datestamp}
-                FROM
-                    {DB_TABLE_NAME}
+                FROM {DB_TABLE_NAME}
+                ORDER BY {DBColumns.datestamp} DESC
+                LIMIT 100
             """
-            wheres = []
-            params = []
-            if filters:
-                if filters.location:
-                    wheres.append(f"{DBColumns.location} = ?")
-                    params.append(filters.location)
-                if filters.page:
-                    wheres.append(f"{DBColumns.page} = ?")
-                    params.append(filters.page)
-                if filters.source:
-                    wheres.append(f"{DBColumns.source} = ?")
-                    params.append(filters.source)
-                if filters.min_date:
-                    wheres.append(f"{DBColumns.datestamp} >= ?")
-                    params.append(filters.min_date)
-                if filters.max_date:
-                    wheres.append(f"{DBColumns.datestamp} <= ?")
-                    params.append(filters.max_date)
 
-            if wheres and params:
-                query += "WHERE " + " AND ".join(wheres)
-            results = await cur.execute(query, params)
-            results = await results.fetchall()
-            output = []
-            for result in results:
-                output.append(RequestInfo(*result))
-            return output
+            cur = await conn.execute(recent_query)
+            recent_rows = await cur.fetchall()
 
-    async def create_db_table(self):
+            recent_requests = [
+                {
+                    F.LOCATION: row[0],
+                    F.PAGE: row[1],
+                    F.SOURCE: row[2],
+                    F.DATESTAMP: row[3],
+                }
+                for row in recent_rows
+            ]
+
+            return {
+                F.ALL_TIME: all_time,
+                F.LAST_MONTH: month_stats,
+                F.LAST_YEAR: year_stats,
+                F.RECENT_REQUESTS: recent_requests,
+            }
+
+    async def _create_db_table(self):
         async with self._get_connection() as conn:
             cur = await conn.cursor()
             await cur.execute(
@@ -74,22 +93,62 @@ class SQLiteDBClient(AbstractDBClient):
                         {DBColumns.datestamp} TEXT NOT NULL
                 ) STRICT"""
             )
-            # datestamp will be the most used column when it comes to filtering
             await cur.execute(
-                f"""CREATE INDEX {DBColumns.datestamp}{DB_INDEX_SUFFIX} ON {DB_TABLE_NAME}({DBColumns.datestamp})"""
+                f"""CREATE INDEX {DBColumns.datestamp}{DB_INDEX_SUFFIX}
+                    ON {DB_TABLE_NAME}({DBColumns.datestamp})"""
             )
 
-    async def db_table_exists(self) -> bool:
+    async def _db_table_exists(self) -> bool:
         async with self._get_connection() as conn:
             cur = await conn.cursor()
             result = await cur.execute(
-                f"SELECT name FROM sqlite_schema WHERE type = 'table' AND name = '{DB_TABLE_NAME}'"
+                f"""
+                SELECT name
+                FROM sqlite_schema
+                WHERE type = 'table' AND name = '{DB_TABLE_NAME}'
+                """
             )
             name = await result.fetchone()
             return name is not None
 
+    @staticmethod
+    async def _get_top(
+        conn: aiosqlite.Connection,
+        column: str,
+        min_date: str | None = None,
+        limit: int = 5,
+    ) -> list[dict]:
+        query = f"""
+            SELECT {column}, COUNT(*) as count
+            FROM {DB_TABLE_NAME}
+        """
+        params = []
+
+        if min_date:
+            query += f" WHERE {DBColumns.datestamp} >= ?"
+            params.append(min_date)
+
+        query += f"""
+            GROUP BY {column}
+            ORDER BY count DESC
+            LIMIT {limit}
+        """
+
+        cur = await conn.execute(query, params)
+        rows = await cur.fetchall()
+
+        return [
+            {
+                F.VALUE: row[0] or "UNKNOWN",
+                F.COUNT: row[1],
+            }
+            for row in rows
+        ]
+
     @asynccontextmanager
     async def _get_connection(self):
         connection = await aiosqlite.connect(self.connection_string)
-        yield connection
-        await connection.close()
+        try:
+            yield connection
+        finally:
+            await connection.close()

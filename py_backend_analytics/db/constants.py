@@ -6,6 +6,11 @@ DB_TABLE_NAME = f"{PACKAGE_NAME}_requests_info"
 DB_INDEX_SUFFIX = "_index"
 
 
+TOP_AGGREGATION_LIMIT = 10
+UNKNOWN = "UNKNOWN"
+DEFAULT_DB_TIMEOUT = 30
+
+
 @dataclass(frozen=True)
 class DBColumns:
     id = "id"

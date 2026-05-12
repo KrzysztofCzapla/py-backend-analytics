@@ -4,7 +4,14 @@ from contextlib import asynccontextmanager
 import aiosqlite
 
 from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
-from py_backend_analytics.db.constants import DB_TABLE_NAME, DBColumns, DB_INDEX_SUFFIX
+from py_backend_analytics.db.constants import (
+    DB_TABLE_NAME,
+    DBColumns,
+    DB_INDEX_SUFFIX,
+    TOP_AGGREGATION_LIMIT,
+    UNKNOWN,
+    DEFAULT_DB_TIMEOUT,
+)
 from py_backend_analytics.db.models import AnalyticsSummaryFields as F
 from py_backend_analytics.models import RequestInfo
 
@@ -116,7 +123,7 @@ class SQLiteDBClient(AbstractDBClient):
         conn: aiosqlite.Connection,
         column: str,
         min_date: str | None = None,
-        limit: int = 5,
+        limit: int = TOP_AGGREGATION_LIMIT,
     ) -> list[dict]:
         query = f"""
             SELECT {column}, COUNT(*) as count
@@ -139,7 +146,7 @@ class SQLiteDBClient(AbstractDBClient):
 
         return [
             {
-                F.VALUE: row[0] or "UNKNOWN",
+                F.VALUE: row[0] or UNKNOWN,
                 F.COUNT: row[1],
             }
             for row in rows
@@ -147,7 +154,9 @@ class SQLiteDBClient(AbstractDBClient):
 
     @asynccontextmanager
     async def _get_connection(self):
-        connection = await aiosqlite.connect(self.connection_string)
+        connection = await aiosqlite.connect(
+            self.connection_string, timeout=DEFAULT_DB_TIMEOUT
+        )
         try:
             yield connection
         finally:

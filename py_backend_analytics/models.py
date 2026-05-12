@@ -4,7 +4,7 @@ from datetime import datetime
 
 @dataclass
 class RequestInfo:
-    location: str
     page: str
     source: str
     datestamp: datetime
+    location: str | None = None

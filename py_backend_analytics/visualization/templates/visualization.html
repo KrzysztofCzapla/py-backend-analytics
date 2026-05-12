@@ -10,7 +10,6 @@
     <header>
         <div class="header-content">
             <h1>📊 py-backend-analytics</h1>
-            <p class="subtitle">Backend request analytics</p>
         </div>
     </header>
 
@@ -51,7 +50,7 @@
                         <ul class="top-list">
                             {% for item in all_time.top_sources %}
                             <li>
-                                <span class="value">{{ item.value|truncate(35) }}</span>
+                                <span class="value">{{ item.value|truncate(40) }}</span>
                                 <span class="count">{{ item.count }}</span>
                             </li>
                             {% endfor %}
@@ -93,7 +92,7 @@
                         <ul class="top-list">
                             {% for item in last_month.top_sources %}
                             <li>
-                                <span class="value">{{ item.value|truncate(35) }}</span>
+                                <span class="value">{{ item.value|truncate(40) }}</span>
                                 <span class="count">{{ item.count }}</span>
                             </li>
                             {% endfor %}
@@ -135,7 +134,7 @@
                         <ul class="top-list">
                             {% for item in last_year.top_sources %}
                             <li>
-                                <span class="value">{{ item.value|truncate(35) }}</span>
+                                <span class="value">{{ item.value|truncate(40) }}</span>
                                 <span class="count">{{ item.count }}</span>
                             </li>
                             {% endfor %}
@@ -163,7 +162,7 @@
                         <tr>
                             <td class="timestamp">{{ req.datestamp[:19] }}</td>
                             <td class="page">{{ req.page }}</td>
-                            <td class="source">{{ req.source|truncate(50) }}</td>
+                            <td class="source">{{ req.source|truncate(55) }}</td>
                             <td class="location">
                                 {% if req.location %}
                                     {{ req.location }}

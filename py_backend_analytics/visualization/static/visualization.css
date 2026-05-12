@@ -1,5 +1,4 @@
-/* styles.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
 
 :root {
     --bg: #0a0a0a;
@@ -35,7 +34,7 @@ header {
 }
 
 .header-content {
-    max-width: 1280px;
+    max-width: 1320px;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
@@ -45,7 +44,7 @@ header {
 
 h1 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 2rem;
+    font-size: 2.1rem;
     font-weight: 600;
     letter-spacing: -0.02em;
 }
@@ -56,16 +55,16 @@ h1 {
 }
 
 .container {
-    max-width: 1280px;
-    margin: 2rem auto;
+    max-width: 1320px;
+    margin: 2.5rem auto;
     padding: 0 2rem;
 }
 
 .periods-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 1.75rem;
+    margin-bottom: 3.5rem;
 }
 
 .period-card {
@@ -73,23 +72,23 @@ h1 {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid #222;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
 }
 
 .period-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
     border-color: #333;
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    box-shadow: 0 25px 35px -10px rgb(0 0 0 / 0.3);
 }
 
 .period-header {
-    padding: 1.25rem 1.75rem;
+    padding: 1.4rem 1.75rem;
     background-color: var(--surface2);
     border-bottom: 1px solid #222;
 }
 
 .period-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: var(--accent);
 }
@@ -103,15 +102,16 @@ h1 {
 
 .stat-section {
     background-color: var(--surface);
-    padding: 1.25rem 1.5rem;
+    padding: 1.4rem 1.6rem;
+    min-width: 0; /* Important for ellipsis */
 }
 
 .stat-section h3 {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     color: var(--text-muted);
-    margin-bottom: 1rem;
+    margin-bottom: 1.1rem;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -124,9 +124,11 @@ h1 {
 .top-list li {
     display: flex;
     justify-content: space-between;
-    padding: 0.65rem 0;
+    align-items: center;
+    padding: 0.7rem 0;
     border-top: 1px solid #222;
-    font-size: 0.95rem;
+    font-size: 0.96rem;
+    min-width: 0;
 }
 
 .top-list li:first-child {
@@ -140,23 +142,24 @@ h1 {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 65%;
+    flex: 1;
+    min-width: 0;
 }
 
 .count {
     background-color: #1f1f1f;
     color: var(--accent);
     font-weight: 600;
-    padding: 2px 9px;
+    padding: 3px 10px;
     border-radius: 9999px;
-    font-size: 0.85rem;
-    min-width: 32px;
-    text-align: center;
+    font-size: 0.87rem;
+    margin-left: 12px;
+    flex-shrink: 0;
 }
 
 .recent-section h2 {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
+    font-size: 1.45rem;
+    margin-bottom: 1.1rem;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -180,16 +183,16 @@ thead {
 
 th {
     text-align: left;
-    padding: 1rem 1.25rem;
+    padding: 1.1rem 1.4rem;
     font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     color: var(--text-muted);
     font-weight: 500;
 }
 
 td {
-    padding: 1rem 1.25rem;
+    padding: 1.1rem 1.4rem;
     border-top: 1px solid #222;
     font-size: 0.95rem;
 }
@@ -197,7 +200,6 @@ td {
 .timestamp {
     font-family: monospace;
     color: var(--text-muted);
-    font-size: 0.9rem;
     white-space: nowrap;
 }
 
@@ -209,7 +211,7 @@ td {
 .source {
     font-family: monospace;
     color: #aaa;
-    max-width: 280px;
+    max-width: 320px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -235,16 +237,23 @@ footer {
 }
 
 /* Responsive */
+@media (max-width: 1100px) {
+    .periods-grid {
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
     .stats-grid {
         grid-template-columns: 1fr;
     }
 
+    .container,
     .header-content {
         padding: 0 1.25rem;
     }
 
-    .container {
-        padding: 0 1.25rem;
+    .period-card {
+        margin-bottom: 0.5rem;
     }
 }

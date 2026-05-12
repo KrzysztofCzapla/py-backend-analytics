@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,88 +7,180 @@
     <link rel="stylesheet" href="static/visualization.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
+    <header>
+        <div class="header-content">
             <h1>📊 py-backend-analytics</h1>
-            <p class="subtitle">Minimal backend traffic insights</p>
-        </header>
+            <p class="subtitle">Backend request analytics</p>
+        </div>
+    </header>
 
-        <main>
-            <section class="grid">
-                {% for period_name, period_data in {
-                    'All Time': all_time,
-                    'Last Year': last_year,
-                    'Last Month': last_month
-                }.items() %}
-                <div class="card">
-                    <h2>🕒 {{ period_name }}</h2>
+    <main class="container">
+        <!-- Period Cards -->
+        <div class="periods-grid">
 
-                    <div class="stat-block">
+            <!-- All Time -->
+            <div class="period-card">
+                <div class="period-header">
+                    <span class="period-title">🌟 All Time</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-section">
                         <h3>🌍 Top Countries</h3>
-                        <ul>
-                            {% for country in period_data.top_countries %}
+                        <ul class="top-list">
+                            {% for item in all_time.top_countries %}
                             <li>
-                                <span>{{ country.value }}</span>
-                                <strong>{{ country.count }}</strong>
+                                <span class="value">{{ item.value }}</span>
+                                <span class="count">{{ item.count }}</span>
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
-
-                    <div class="stat-block">
+                    <div class="stat-section">
                         <h3>📄 Top Pages</h3>
-                        <ul>
-                            {% for page in period_data.top_pages %}
+                        <ul class="top-list">
+                            {% for item in all_time.top_pages %}
                             <li>
-                                <span>{{ page.value }}</span>
-                                <strong>{{ page.count }}</strong>
+                                <span class="value">{{ item.value }}</span>
+                                <span class="count">{{ item.count }}</span>
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
-
-                    <div class="stat-block">
-                        <h3>🚀 Top Sources</h3>
-                        <ul>
-                            {% for source in period_data.top_sources %}
+                    <div class="stat-section">
+                        <h3>🔗 Top Sources</h3>
+                        <ul class="top-list">
+                            {% for item in all_time.top_sources %}
                             <li>
-                                <span>{{ source.value }}</span>
-                                <strong>{{ source.count }}</strong>
+                                <span class="value">{{ item.value|truncate(35) }}</span>
+                                <span class="count">{{ item.count }}</span>
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
                 </div>
-                {% endfor %}
-            </section>
+            </div>
 
-            <section class="card requests">
-                <h2>🧾 Recent Requests</h2>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Page</th>
-                                <th>Source</th>
-                                <th>Location</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for request in recent_requests %}
-                            <tr>
-                                <td>{{ request.datestamp }}</td>
-                                <td>{{ request.page }}</td>
-                                <td class="source">{{ request.source }}</td>
-                                <td>{{ request.location or 'UNKNOWN' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <!-- Last Month -->
+            <div class="period-card">
+                <div class="period-header">
+                    <span class="period-title">📅 Last Month</span>
                 </div>
-            </section>
-        </main>
-    </div>
+                <div class="stats-grid">
+                    <div class="stat-section">
+                        <h3>🌍 Top Countries</h3>
+                        <ul class="top-list">
+                            {% for item in last_month.top_countries %}
+                            <li>
+                                <span class="value">{{ item.value }}</span>
+                                <span class="count">{{ item.count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="stat-section">
+                        <h3>📄 Top Pages</h3>
+                        <ul class="top-list">
+                            {% for item in last_month.top_pages %}
+                            <li>
+                                <span class="value">{{ item.value }}</span>
+                                <span class="count">{{ item.count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="stat-section">
+                        <h3>🔗 Top Sources</h3>
+                        <ul class="top-list">
+                            {% for item in last_month.top_sources %}
+                            <li>
+                                <span class="value">{{ item.value|truncate(35) }}</span>
+                                <span class="count">{{ item.count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last Year -->
+            <div class="period-card">
+                <div class="period-header">
+                    <span class="period-title">📆 Last Year</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-section">
+                        <h3>🌍 Top Countries</h3>
+                        <ul class="top-list">
+                            {% for item in last_year.top_countries %}
+                            <li>
+                                <span class="value">{{ item.value }}</span>
+                                <span class="count">{{ item.count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="stat-section">
+                        <h3>📄 Top Pages</h3>
+                        <ul class="top-list">
+                            {% for item in last_year.top_pages %}
+                            <li>
+                                <span class="value">{{ item.value }}</span>
+                                <span class="count">{{ item.count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="stat-section">
+                        <h3>🔗 Top Sources</h3>
+                        <ul class="top-list">
+                            {% for item in last_year.top_sources %}
+                            <li>
+                                <span class="value">{{ item.value|truncate(35) }}</span>
+                                <span class="count">{{ item.count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Requests -->
+        <div class="recent-section">
+            <h2>🕒 Recent Requests</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Page</th>
+                            <th>Source</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in recent_requests %}
+                        <tr>
+                            <td class="timestamp">{{ req.datestamp[:19] }}</td>
+                            <td class="page">{{ req.page }}</td>
+                            <td class="source">{{ req.source|truncate(50) }}</td>
+                            <td class="location">
+                                {% if req.location %}
+                                    {{ req.location }}
+                                {% else %}
+                                    <span class="unknown">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Built with ❤️ for Python backends • Last updated: {{ recent_requests[0].datestamp[:10] if recent_requests else 'N/A' }}</p>
+    </footer>
 </body>
 </html>

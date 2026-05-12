@@ -1,162 +1,95 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>py-backend-analytics</title>
-
-    <link rel="stylesheet" href="/analytics-static/visualization.css"/>
+    <link rel="stylesheet" href="static/visualization.css">
 </head>
-
 <body>
+    <div class="container">
+        <header class="header">
+            <h1>📊 py-backend-analytics</h1>
+            <p class="subtitle">Minimal backend traffic insights</p>
+        </header>
 
-<div class="container">
+        <main>
+            <section class="grid">
+                {% for period_name, period_data in {
+                    'All Time': all_time,
+                    'Last Year': last_year,
+                    'Last Month': last_month
+                }.items() %}
+                <div class="card">
+                    <h2>🕒 {{ period_name }}</h2>
 
-    <header class="topbar">
-        <div class="logo">
-            <span class="logo-dot"></span>
-            <div>
-                <h1>py-backend-analytics</h1>
-                <p>Request analytics dashboard</p>
-            </div>
-        </div>
-    </header>
+                    <div class="stat-block">
+                        <h3>🌍 Top Countries</h3>
+                        <ul>
+                            {% for country in period_data.top_countries %}
+                            <li>
+                                <span>{{ country.value }}</span>
+                                <strong>{{ country.count }}</strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
 
-    <section class="stats-grid">
+                    <div class="stat-block">
+                        <h3>📄 Top Pages</h3>
+                        <ul>
+                            {% for page in period_data.top_pages %}
+                            <li>
+                                <span>{{ page.value }}</span>
+                                <strong>{{ page.count }}</strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
 
-        <div class="stat-card">
-            <span class="stat-label">Total Requests</span>
-            <span class="stat-value">{{ total_requests }}</span>
-        </div>
+                    <div class="stat-block">
+                        <h3>🚀 Top Sources</h3>
+                        <ul>
+                            {% for source in period_data.top_sources %}
+                            <li>
+                                <span>{{ source.value }}</span>
+                                <strong>{{ source.count }}</strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
 
-        <div class="stat-card">
-            <span class="stat-label">Unique Pages</span>
-            <span class="stat-value">{{ unique_pages }}</span>
-        </div>
+            <section class="card requests">
+                <h2>🧾 Recent Requests</h2>
 
-        <div class="stat-card">
-            <span class="stat-label">Unique Sources</span>
-            <span class="stat-value">{{ unique_sources }}</span>
-        </div>
-
-        <div class="stat-card">
-            <span class="stat-label">Unique Locations</span>
-            <span class="stat-value">{{ unique_locations }}</span>
-        </div>
-
-    </section>
-
-    <section class="content-grid">
-
-        <div class="panel">
-            <div class="panel-title">Top Pages</div>
-
-            {% for name, value in top_pages %}
-            <div class="list-row">
-                <span>{{ name }}</span>
-                <span class="badge">{{ value }}</span>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">Top Sources</div>
-
-            {% for name, value in top_sources %}
-            <div class="list-row">
-                <span>{{ name }}</span>
-                <span class="badge">{{ value }}</span>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">Top Locations</div>
-
-            {% for name, value in top_locations %}
-            <div class="list-row">
-                <span>{{ name }}</span>
-                <span class="badge">{{ value }}</span>
-            </div>
-            {% endfor %}
-        </div>
-
-    </section>
-
-    <section class="panel">
-        <div class="panel-title">Daily Activity (all time)</div>
-        <canvas id="dailyChart"></canvas>
-    </section>
-
-    <section class="panel">
-        <div class="panel-title">Weekly Activity (all time)</div>
-        <canvas id="weeklyChart"></canvas>
-    </section>
-
-    <script>
-        window.daily = {{ daily | tojson }};
-        window.weekly = {{ weekly | tojson }};
-    </script>
-
-    <script src="/analytics-static/visualization.js"></script>
-
-    <section class="panel table-panel">
-
-        <div class="panel-title">
-            Recent Requests
-        </div>
-
-        <table>
-            <thead>
-            <tr>
-                <th>Location</th>
-                <th>Page</th>
-                <th>Source</th>
-                <th>Date</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for r in latest_requests %}
-            <tr>
-                <td>{{ r.location }}</td>
-                <td>{{ r.page }}</td>
-                <td>{{ r.source }}</td>
-                <td>{{ r.datestamp }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-    </section>
-
-
-
-</div>
-
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Page</th>
+                                <th>Source</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in recent_requests %}
+                            <tr>
+                                <td>{{ request.datestamp }}</td>
+                                <td>{{ request.page }}</td>
+                                <td class="source">{{ request.source }}</td>
+                                <td>{{ request.location or 'UNKNOWN' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
 </body>
 </html>
-
-<script>
-window.addEventListener("DOMContentLoaded", () => {
-    // Inject data from backend
-    const dailyData = {{ daily | tojson }};
-    const weeklyData = {{ weekly | tojson }};
-
-    function renderAll() {
-        drawChart("dailyChart", dailyData);
-        drawChart("weeklyChart", weeklyData);
-    }
-
-    // Initial Draw
-    renderAll();
-
-    // Debounced Resize logic
-    let resizeTimer;
-    window.addEventListener("resize", () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(renderAll, 150);
-    });
-});
-</script>

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List
 
 from py_backend_analytics.models import RequestInfo
 
@@ -23,7 +22,7 @@ class AbstractDBClient(ABC):
     async def insert_request_info(self, model: RequestInfo): ...
 
     @abstractmethod
-    async def get_analytics_summary(self) -> List[RequestInfo]: ...
+    async def get_analytics_summary(self) -> dict: ...
 
     @abstractmethod
     async def _create_db_table(self): ...

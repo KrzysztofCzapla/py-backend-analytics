@@ -1,8 +1,8 @@
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 from typing import List
 
 from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
-import sqlite3
+import aiosqlite
 
 from py_backend_analytics.db.constants import DB_TABLE_NAME, DBColumns, DB_INDEX_SUFFIX
 from py_backend_analytics.db.models import Filters
@@ -10,20 +10,22 @@ from py_backend_analytics.models import RequestInfo
 
 
 class SQLiteDBClient(AbstractDBClient):
-    def insert_request_info(self, model: RequestInfo):
-        with self._get_connection() as conn:
-            cur = conn.cursor()
-            cur.execute(
+    async def insert_request_info(self, model: RequestInfo):
+        async with self._get_connection() as conn:
+            cur = await conn.cursor()
+            await cur.execute(
                 f"""INSERT INTO {DB_TABLE_NAME}
                     ({DBColumns.location}, {DBColumns.page}, {DBColumns.source}, {DBColumns.datestamp}) VALUES
                     (?, ?, ?, ?)""",
                 (model.location, model.page, model.source, model.datestamp),
             )
-            conn.commit()
+            await conn.commit()
 
-    def read_request_info(self, filters: Filters | None = None) -> List[RequestInfo]:
-        with self._get_connection() as conn:
-            cur = conn.cursor()
+    async def read_request_info(
+        self, filters: Filters | None = None
+    ) -> List[RequestInfo]:
+        async with self._get_connection() as conn:
+            cur = await conn.cursor()
             query = f"""SELECT
                     {DBColumns.location},
                     {DBColumns.page},
@@ -53,17 +55,17 @@ class SQLiteDBClient(AbstractDBClient):
 
             if wheres and params:
                 query += "WHERE " + " AND ".join(wheres)
-            results = cur.execute(query, params)
-            results = results.fetchall()
+            results = await cur.execute(query, params)
+            results = await results.fetchall()
             output = []
             for result in results:
                 output.append(RequestInfo(*result))
             return output
 
-    def create_db_table(self):
-        with self._get_connection() as conn:
-            cur = conn.cursor()
-            cur.execute(
+    async def create_db_table(self):
+        async with self._get_connection() as conn:
+            cur = await conn.cursor()
+            await cur.execute(
                 f"""CREATE TABLE {DB_TABLE_NAME}(
                         {DBColumns.id} INTEGER PRIMARY KEY,
                         {DBColumns.location} TEXT NULL,
@@ -73,21 +75,21 @@ class SQLiteDBClient(AbstractDBClient):
                 ) STRICT"""
             )
             # datestamp will be the most used column when it comes to filtering
-            cur.execute(
+            await cur.execute(
                 f"""CREATE INDEX {DBColumns.datestamp}{DB_INDEX_SUFFIX} ON {DB_TABLE_NAME}({DBColumns.datestamp})"""
             )
 
-    def db_table_exists(self) -> bool:
-        with self._get_connection() as conn:
-            cur = conn.cursor()
-            result = cur.execute(
+    async def db_table_exists(self) -> bool:
+        async with self._get_connection() as conn:
+            cur = await conn.cursor()
+            result = await cur.execute(
                 f"SELECT name FROM sqlite_schema WHERE type = 'table' AND name = '{DB_TABLE_NAME}'"
             )
-            name = result.fetchone()
+            name = await result.fetchone()
             return name is not None
 
-    @contextmanager
-    def _get_connection(self):
-        connection = sqlite3.connect(self.connection_string)
+    @asynccontextmanager
+    async def _get_connection(self):
+        connection = await aiosqlite.connect(self.connection_string)
         yield connection
-        connection.close()
+        await connection.close()

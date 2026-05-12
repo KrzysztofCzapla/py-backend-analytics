@@ -9,18 +9,24 @@ from py_backend_analytics.models import RequestInfo
 class AbstractDBClient(ABC):
     connection_string: str
 
-    def __post_init__(self):
-        if not self.db_table_exists():
-            self.create_db_table()
+    @classmethod
+    async def create(cls, connection_string: str):
+        self = cls(connection_string)
+        await self.db_setup()
+        return self
+
+    async def db_setup(self):
+        if not await self.db_table_exists():
+            await self.create_db_table()
 
     @abstractmethod
-    def insert_request_info(self, model: RequestInfo): ...
+    async def insert_request_info(self, model: RequestInfo): ...
 
     @abstractmethod
-    def read_request_info(self) -> List[RequestInfo]: ...
+    async def read_request_info(self) -> List[RequestInfo]: ...
 
     @abstractmethod
-    def create_db_table(self): ...
+    async def create_db_table(self): ...
 
     @abstractmethod
-    def db_table_exists(self) -> bool: ...
+    async def db_table_exists(self) -> bool: ...

@@ -1,4 +1,4 @@
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -53,55 +53,29 @@ def _build_time_series(requests):
     )
 
 
-def fastapi_get_visualization_page(
+async def fastapi_get_visualization_page(
     app: FastAPI, input_data: PyBackendAnalyticsInputData, request: Request
 ) -> _TemplateResponse:
     app.mount(
         "/analytics-static", StaticFiles(directory=_STATIC_DIR), name="analytics-static"
     )
 
-    db_client = get_db_client(input_data.db_connection_string, input_data.db_type)
+    db_client = await get_db_client(input_data.db_connection_string, input_data.db_type)
 
-    requests = _normalize_datetimes(db_client.read_request_info())
+    results = await db_client.read_request_info()
+    # requests = _normalize_datetimes(results)
 
-    page_counter = Counter(r.page for r in requests)
-    source_counter = Counter(r.source for r in requests)
-    location_counter = Counter(r.location for r in requests)
+    # page_counter = Counter(r.page for r in requests)
+    # source_counter = Counter(r.source for r in requests)
+    # location_counter = Counter(r.location for r in requests)
+    #
+    # months = Counter((r.datestamp.year, r.datestamp.month) for r in requests)
+    # years = Counter(r.datestamp.year for r in requests)
+    # hours = Counter(r.datestamp.hour for r in requests)
+    #
+    # top_month = months.most_common(1)[0] if months else None
+    # top_year = years.most_common(1)[0] if years else None
+    #
+    # daily, weekly = _build_time_series(requests)
 
-    months = Counter((r.datestamp.year, r.datestamp.month) for r in requests)
-    years = Counter(r.datestamp.year for r in requests)
-    hours = Counter(r.datestamp.hour for r in requests)
-
-    top_month = months.most_common(1)[0] if months else None
-    top_year = years.most_common(1)[0] if years else None
-
-    daily, weekly = _build_time_series(requests)
-
-    return _TEMPLATES.TemplateResponse(
-        "visualization.html",
-        {
-            "request": request,
-            # metrics
-            "total_requests": len(requests),
-            "unique_pages": len(page_counter),
-            "unique_sources": len(source_counter),
-            "unique_locations": len(location_counter),
-            # rankings
-            "top_pages": page_counter.most_common(20),
-            "top_sources": source_counter.most_common(20),
-            "top_locations": location_counter.most_common(20),
-            # time-based stats
-            "months": months,
-            "years": years,
-            "hours": hours,
-            "top_month": top_month,
-            "top_year": top_year,
-            # time series charts
-            "daily": daily,
-            "weekly": weekly,
-            # table
-            "latest_requests": sorted(
-                requests, key=lambda r: r.datestamp, reverse=True
-            )[:100],
-        },
-    )
+    return results

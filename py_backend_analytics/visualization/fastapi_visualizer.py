@@ -16,7 +16,7 @@ _TEMPLATES = Jinja2Templates(directory=_TEMPLATES_DIR)
 ANALYTICS_STATIC = PACKAGE_NAME
 
 
-async def fastapi_get_visualization_page(
+async def py_backend_analytics_fastapi_visualization(
     app: FastAPI, input_data: PyBackendAnalyticsInputData, request: Request
 ) -> _TemplateResponse:
     app.mount(

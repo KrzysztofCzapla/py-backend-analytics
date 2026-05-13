@@ -23,7 +23,7 @@
                 <div class="stats-group">
                     <h3>Top Pages 📄</h3>
                     <ul>
-                        {% for item in data.top_pages[:3] %}
+                        {% for item in data.top_pages %}
                         <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
                         {% endfor %}
                     </ul>
@@ -31,7 +31,7 @@
                 <div class="stats-group">
                     <h3>Top Sources 🔗</h3>
                     <ul>
-                        {% for item in data.top_sources[:3] %}
+                        {% for item in data.top_sources %}
                         <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
                         {% endfor %}
                     </ul>
@@ -39,7 +39,7 @@
                 <div class="stats-group">
                     <h3>Top Countries 🌍</h3>
                     <ul>
-                        {% for item in data.top_countries[:3] %}
+                        {% for item in data.top_countries %}
                         <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
                         {% endfor %}
                     </ul>

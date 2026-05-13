@@ -36,6 +36,14 @@
                         {% endfor %}
                     </ul>
                 </div>
+                <div class="stats-group">
+                    <h3>Top Countries 🌍</h3>
+                    <ul>
+                        {% for item in data.top_countries[:3] %}
+                        <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
             {% endfor %}
         </section>

@@ -10,6 +10,17 @@ from py_backend_analytics.models import RequestInfo
 
 
 class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
+    """
+    DB is initted in the dispatch because there is no reliable way to call async method from __init__, since
+    there may already be an event loop running.
+
+    The flow:
+    1) Init DB if needed
+    2) Extract info from the request
+    3) Save the info to the DB if the request page is not excluded
+    4) On error: best effort to log the error message
+    """
+
     def __init__(self, app, input_data: PyBackendAnalyticsInputData):
         super().__init__(app)
         self._initialized = False
@@ -46,6 +57,15 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
 
     def _should_save_request(self, request_info: RequestInfo):
         page = request_info.page
-        return page not in self._data.excluded_endpoints and not any(
-            page.startswith(fragment) for fragment in self._data.excluded_path_prefixes
+        return (
+            page not in self._data.excluded_endpoints
+            and not any(
+                page.startswith(fragment)
+                for fragment in self._data.excluded_path_prefixes
+            )
+            and not any(
+                fragment
+                for fragment in self._data.excluded_path_fragments
+                if fragment in page
+            )
         )

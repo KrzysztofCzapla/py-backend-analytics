@@ -19,6 +19,12 @@ from py_backend_analytics.extraction.constants import (
 
 
 class IpCountryLookup:
+    """
+    Installs IP DB, if it's not present, in the TEMP folder.
+
+    The DB is Taken from db-ip.com and is free. Then we use maxminddb to extract data from it.
+    """
+
     def __init__(self):
         self._dir = Path(tempfile.gettempdir()) / TEMP_DIR_NAME
         self._dir.mkdir(exist_ok=True)

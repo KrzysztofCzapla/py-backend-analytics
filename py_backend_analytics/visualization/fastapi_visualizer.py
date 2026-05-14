@@ -19,6 +19,7 @@ ANALYTICS_STATIC = PACKAGE_NAME
 async def py_backend_analytics_fastapi_visualization(
     app: FastAPI, input_data: PyBackendAnalyticsInputData, request: Request
 ) -> _TemplateResponse:
+    """Visualizes the DB data as an HTML file, it also uses CSS."""
     app.mount(
         f"/{ANALYTICS_STATIC}",
         StaticFiles(directory=_STATIC_DIR),

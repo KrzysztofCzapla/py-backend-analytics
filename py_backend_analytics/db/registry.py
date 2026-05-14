@@ -8,6 +8,7 @@ DB_CLIENTS = {PyBackendAnalyticsDB.SQLITE: SQLiteDBClient}
 async def get_db_client(
     connection_string: str, db_type: PyBackendAnalyticsDB
 ) -> AbstractDBClient:
+    """Unified interface for getting the correct type of DB Client"""
     db_client_class = DB_CLIENTS.get(db_type)
     if not db_client_class:
         raise ValueError(f"Provided wrong DB type: {db_type}")

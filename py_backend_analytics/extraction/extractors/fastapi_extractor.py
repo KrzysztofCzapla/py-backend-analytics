@@ -10,6 +10,7 @@ from py_backend_analytics.models import RequestInfo
 
 class FastAPIExtractor(AbstractExtractor):
     def extract(self, request: T) -> RequestInfo:
+        """Extracts info from a FastAPI request. No FastAPI typing, so FastAPI is not needed at import."""
         page = request.url.path  # /users/12313 - backup
         # best effort to get /users/{id} instead of /users/12313
         for route in request.app.router.routes:

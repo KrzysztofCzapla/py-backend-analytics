@@ -6,6 +6,8 @@ from py_backend_analytics.models import RequestInfo
 
 @dataclass
 class AbstractDBClient(ABC):
+    """Client for interaction with the DB. Methods names are very self-descriptive"""
+
     connection_string: str
 
     @classmethod

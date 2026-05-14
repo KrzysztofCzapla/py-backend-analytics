@@ -21,7 +21,7 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
         try:
             if not self._initialized:
                 await self._setup_db()
-            request_info = FastAPIExtractor.extract(request)
+            request_info = FastAPIExtractor().extract(request)
             if self._should_save_request(request_info):
                 await self._db_client.insert_request_info(request_info)
         except Exception as e:
@@ -34,6 +34,7 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
         self._db_client = await get_db_client(
             self._data.db_connection_string, self._data.db_type
         )
+        self._initialized = True
 
     def _debug(self, message: str):
         """Best effort to log"""

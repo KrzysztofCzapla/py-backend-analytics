@@ -29,10 +29,8 @@ class IpCountryLookup:
 
     def get_country(self, ip: str) -> str | None:
         data = self._db.get(ip)
-
         if not data:
             return None
-
         return data.get(COUNTRY, {}).get(NAMES, {}).get(EN)
 
     def _download(self):

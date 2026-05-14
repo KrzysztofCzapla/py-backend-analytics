@@ -8,8 +8,10 @@ T = TypeVar("T")
 
 
 class AbstractExtractor(ABC, Generic[T]):
-    geo_lookup: IpCountryLookup = IpCountryLookup()
+    geo_lookup: IpCountryLookup
 
-    @classmethod
+    def __init__(self):
+        self.geo_lookup = IpCountryLookup()
+
     @abstractmethod
-    def extract(cls, request: T) -> RequestInfo: ...
+    def extract(self, request: T) -> RequestInfo: ...

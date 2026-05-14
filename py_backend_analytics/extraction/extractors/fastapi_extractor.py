@@ -9,8 +9,7 @@ from py_backend_analytics.models import RequestInfo
 
 
 class FastAPIExtractor(AbstractExtractor):
-    @classmethod
-    def extract(cls, request: T) -> RequestInfo:
+    def extract(self, request: T) -> RequestInfo:
         page = request.url.path  # /users/12313 - backup
         # best effort to get /users/{id} instead of /users/12313
         for route in request.app.router.routes:
@@ -22,7 +21,7 @@ class FastAPIExtractor(AbstractExtractor):
         source = request.headers.get("referer", "direct")
         datestamp = datetime.now(timezone.utc)
         ip = request.client.host
-        location = cls.geo_lookup.get_country(ip)
+        location = self.geo_lookup.get_country(ip)
         return RequestInfo(
             location=location, page=page, source=source, datestamp=datestamp
         )

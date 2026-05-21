@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "py-backend-analytics"
-version = "0.3.0"
+version = "0.4.0"
 description = "easy-to-setup network analytics for python backends"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,3 +22,6 @@ test = [
     "jinja2",
     "httpx"
 ]
+
+[tool.setuptools.package-data]
+py_backend_analytics = ["**/*.css", "**/*.html"]

@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
 
-import asyncpg
-
 from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 from py_backend_analytics.db.constants import (
     DB_TABLE_NAME,
@@ -124,7 +122,7 @@ class PostgresDBClient(AbstractDBClient):
 
     @staticmethod
     async def _get_top(
-        conn: asyncpg.Connection,
+        conn,
         column: str,
         min_date: str | None = None,
         limit: int = TOP_AGGREGATION_LIMIT,
@@ -163,6 +161,8 @@ class PostgresDBClient(AbstractDBClient):
             async with self._pool.acquire() as conn:
                 yield conn
         else:
+            import asyncpg
+
             conn = await asyncpg.connect(self._connection_string)
             try:
                 yield conn

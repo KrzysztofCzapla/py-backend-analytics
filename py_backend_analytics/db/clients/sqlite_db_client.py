@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
 
-import aiosqlite
-
 from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 from py_backend_analytics.db.constants import (
     DB_TABLE_NAME,
@@ -120,7 +118,7 @@ class SQLiteDBClient(AbstractDBClient):
 
     @staticmethod
     async def _get_top(
-        conn: aiosqlite.Connection,
+        conn,
         column: str,
         min_date: str | None = None,
         limit: int = TOP_AGGREGATION_LIMIT,
@@ -154,6 +152,8 @@ class SQLiteDBClient(AbstractDBClient):
 
     @asynccontextmanager
     async def _get_connection(self):
+        import aiosqlite
+
         connection = await aiosqlite.connect(
             self._connection_string, timeout=DEFAULT_DB_TIMEOUT
         )

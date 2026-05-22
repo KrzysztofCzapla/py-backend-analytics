@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from starlette.routing import Match
+
+from fastapi.routing import Match
 
 from py_backend_analytics.extraction.extractors.abstract_extractor import (
     AbstractExtractor,
@@ -22,7 +23,20 @@ class FastAPIExtractor(AbstractExtractor):
         source = request.headers.get("referer", "direct")
         datestamp = datetime.now(timezone.utc)
         ip = request.client.host
-        location = self.geo_lookup.get_country(ip)
+        try:
+            if self.geo_lookup is not None:
+                location = self.geo_lookup.get_country(ip)
+            else:
+                location = None
+        except Exception as e:
+            location = None
+            if self.logger:
+                try:
+                    self.logger.warning(
+                        f"Got an error while trying to get an ip location: {e}"
+                    )
+                except Exception as e:
+                    pass
         return RequestInfo(
             location=location, page=page, source=source, datestamp=datestamp
         )

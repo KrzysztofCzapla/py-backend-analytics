@@ -27,12 +27,13 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
         self._data = input_data
         self._logger = input_data.logger
         self._db_client = None
+        self._extractor = FastAPIExtractor(self._logger)
 
     async def dispatch(self, request: Request, call_next):
         try:
             if not self._initialized:
                 await self._setup_db()
-            request_info = FastAPIExtractor().extract(request)
+            request_info = self._extractor.extract(request)
             if self._should_save_request(request_info):
                 await self._db_client.insert_request_info(request_info)
         except Exception as e:

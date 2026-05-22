@@ -40,16 +40,19 @@ class IpCountryLookup:
         return data.get(COUNTRY, {}).get(NAMES, {}).get(EN)
 
     def _download(self):
-        url = self._url()
-        gz = self._dir / GZ_FILE_NAME
+        try:
+            url = self._url()
+            gz = self._dir / GZ_FILE_NAME
 
-        with urlopen(url) as r:
-            with open(gz, "wb") as f:
-                f.write(r.read())
+            with urlopen(url) as r:
+                with open(gz, "wb") as f:
+                    f.write(r.read())
 
-        with gzip.open(gz, "rb") as f_in:
-            with open(self._mmdb, "wb") as f_out:
-                shutil.copyfileobj(f_in, f_out)
+            with gzip.open(gz, "rb") as f_in:
+                with open(self._mmdb, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        except Exception as e:
+            raise Exception(f"Failed to download IP database: {e}")
 
     def _url(self) -> str:
         month = date.today().strftime("%Y-%m")

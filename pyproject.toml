@@ -9,13 +9,23 @@ description = "easy-to-setup network analytics for python backends"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "aiosqlite>=0.22.1",
-    "maxminddb>=3.1.1",
+    "maxminddb>=3.1.1"
+]
+
+[project.optional-dependencies]
+sqlite = [
+  "aiosqlite>=0.22.1",
+]
+
+postgres = [
+  "asyncpg"
 ]
 
 [dependency-groups]
 test = [
     "pytest",
+    "aiosqlite>=0.22.1",
+    "asyncpg",
     "pytest-asyncio",
     "fastapi",
     "uvicorn",

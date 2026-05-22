@@ -44,7 +44,9 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
 
     async def _setup_db(self):
         self._db_client = await get_db_client(
-            self._data.db_connection_string, self._data.db_type
+            self._data.db_connection_string,
+            self._data.db_connection_pool,
+            self._data.db_type,
         )
         self._initialized = True
 

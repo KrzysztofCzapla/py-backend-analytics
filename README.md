@@ -23,6 +23,7 @@ Currently supported frameworks:
 
 Currently supported databases:
 - SQLite
+- Postgres
 
 ## Overview flow
 
@@ -40,12 +41,19 @@ Also, improvements for the visualization layers.
 
 ## Installation
 
+SQLite:
 ```bash
-$ pip install py_backend_analytics
+$ pip install py_backend_analytics[sqlite]
+```
+
+Postgres:
+```bash
+$ pip install py_backend_analytics[postgres]
 ```
 
 ## Quickstart
 
+SQLite:
 ```python
 import uvicorn
 from fastapi import FastAPI, Request, APIRouter
@@ -71,6 +79,40 @@ app.include_router(my_router, tags=["my_router"])
 uvicorn.run(app, port=8080)
 ```
 
+Postgres:
+```python
+import uvicorn
+import asyncpg
+import asyncio
+from fastapi import FastAPI, Request, APIRouter
+
+from py_backend_analytics import PyBackendAnalyticsInputData, PyBackendAnalyticsFastAPIMiddleware, py_backend_analytics_fastapi_visualization, PyBackendAnalyticsDB
+
+app = FastAPI()
+my_router = APIRouter()
+async def get_db_pool():
+    return await asyncpg.create_pool(
+        dsn=DB_CONNECTION_STRING,
+        min_size=5,
+        max_size=20,
+    )
+
+# Setup py_backend_analytics
+db_connection_pool = asyncio.run(get_db_pool())
+input_data = PyBackendAnalyticsInputData(db_connection_pool=db_connection_pool, db_type=PyBackendAnalyticsDB.POSTGRES)
+app.add_middleware(PyBackendAnalyticsFastAPIMiddleware, input_data)
+
+# Create endpoint with visualization
+@my_router.get("/")
+async def get(request: Request):
+    # This will return HTML page that you can see at the top of this doc
+    return await py_backend_analytics_fastapi_visualization(app, input_data, request)
+
+# run the ap
+app.include_router(my_router, tags=["my_router"])
+uvicorn.run(app, port=8080)
+```
+
 ## Usage
 
 ### Input Data
@@ -80,7 +122,8 @@ You must create a `PyBackendAnalyticsInputData` object and specify its attribute
 The only required attribute is the connection string to the DB, rest is optional.
 
 Attributes are:
-- `db_connection_string: str`
+- `db_connection_string: str | None` - connection string to the db; if not provided, pool is mandatory.
+- `db_connection_pool: Any` - creating connections is expensive, you can provide a pool; works only for postgres; we are assuming asyncpg connection pool.
 - `db_type: PyBackendAnalyticsDB` - Enum that chooses the database type, defaults to `PyBackendAnalyticsDB.SQLITE`
 - `excluded_endpoints: List[str]` - list of excluded endpoints. defaults are: `["/favicon.ico", "/style.css"]`
 - `excluded_path_fragments: List[str]` - excluded path fragments. defaults are: `["static", "py_backend_analytics"]`

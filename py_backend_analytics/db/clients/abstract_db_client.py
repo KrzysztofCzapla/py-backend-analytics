@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Any
 
 from py_backend_analytics.models import RequestInfo
 
@@ -8,11 +9,16 @@ from py_backend_analytics.models import RequestInfo
 class AbstractDBClient(ABC):
     """Client for interaction with the DB. Methods names are very self-descriptive"""
 
-    connection_string: str
+    _connection_string: str | None = None
+    _pool: Any = None
+
+    def __post_init__(self):
+        if not self._connection_string and not self._pool:
+            raise ValueError("Either connection_string or pool must be provided")
 
     @classmethod
-    async def create(cls, connection_string: str):
-        self = cls(connection_string)
+    async def create(cls, connection_string: str, connection_pool: Any):
+        self = cls(connection_string, connection_pool)
         await self.db_setup()
         return self
 

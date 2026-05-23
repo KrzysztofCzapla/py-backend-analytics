@@ -124,6 +124,7 @@ The only required attribute is the connection string to the DB, rest is optional
 Attributes are:
 - `db_connection_string: str | None` - connection string to the db; if not provided, pool is mandatory.
 - `db_connection_pool: Any` - creating connections is expensive, you can provide a pool; works only for postgres; we are assuming asyncpg connection pool.
+- `fastapi_state_db_pool_attribute: str | None` - if set the db_connection_pool will be accessed via `getattr(request.app.state, fastapi_state_db_pool_attribute, connection_pool)`; works only for fastapi.
 - `db_type: PyBackendAnalyticsDB` - Enum that chooses the database type, defaults to `PyBackendAnalyticsDB.SQLITE`
 - `excluded_endpoints: List[str]` - list of excluded endpoints. defaults are: `["/favicon.ico", "/style.css"]`
 - `excluded_path_fragments: List[str]` - excluded path fragments. defaults are: `["static", "py_backend_analytics"]`

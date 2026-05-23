@@ -32,7 +32,7 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
             if not self._initialized:
-                await self._setup_db()
+                await self._setup_db(request)
             request_info = self._extractor.extract(request)
             if self._should_save_request(request_info):
                 await self._db_client.insert_request_info(request_info)
@@ -42,10 +42,13 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
             )
         return await call_next(request)
 
-    async def _setup_db(self):
+    async def _setup_db(self, request: Request):
+        connection_pool = self._data.db_connection_pool
+        if (attr := self._data.fastapi_state_db_pool_attribute) is not None:
+            connection_pool = getattr(request.app.state, attr, connection_pool)
         self._db_client = await get_db_client(
             self._data.db_connection_string,
-            self._data.db_connection_pool,
+            connection_pool,
             self._data.db_type,
         )
         self._initialized = True

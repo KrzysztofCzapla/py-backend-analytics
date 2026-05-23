@@ -9,6 +9,7 @@ from py_backend_analytics.enums import PyBackendAnalyticsDB
 class PyBackendAnalyticsInputData:
     db_connection_string: str | None = None
     db_connection_pool: Any = None
+    fastapi_state_db_pool_attribute: str | None = None
     db_type: PyBackendAnalyticsDB = PyBackendAnalyticsDB.SQLITE
     excluded_endpoints: List[str] = field(default_factory=list)
     excluded_path_fragments: List[str] = field(default_factory=list)
@@ -16,9 +17,13 @@ class PyBackendAnalyticsInputData:
     logger: Any | None = None
 
     def __post_init__(self):
-        if self.db_connection_pool is None and self.db_connection_string is None:
+        if (
+            self.db_connection_pool is None
+            and self.db_connection_string is None
+            and self.fastapi_state_db_pool_attribute is None
+        ):
             raise ValueError(
-                "PyBackendAnalytics: Either db_connection_pool or db_connection_string must be provided"
+                "PyBackendAnalytics: db_connection_pool or db_connection_string or fastapi_state_db_pool_attribute must be provided"
             )
         if (
             self.db_type == PyBackendAnalyticsDB.SQLITE

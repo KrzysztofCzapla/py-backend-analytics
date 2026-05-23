@@ -32,9 +32,8 @@ class PostgresDBClient(AbstractDBClient):
         async with self._get_connection() as conn:
             now = datetime.now(timezone.utc)
 
-            last_month = (now - timedelta(days=30)).isoformat()
-            last_year = (now - timedelta(days=365)).isoformat()
-
+            last_month = now - timedelta(days=30)
+            last_year = now - timedelta(days=365)
             all_time = {
                 F.TOP_COUNTRIES: await self._get_top(conn, DBColumns.location),
                 F.TOP_PAGES: await self._get_top(conn, DBColumns.page),
@@ -124,7 +123,7 @@ class PostgresDBClient(AbstractDBClient):
     async def _get_top(
         conn,
         column: str,
-        min_date: str | None = None,
+        min_date: datetime | None = None,
         limit: int = TOP_AGGREGATION_LIMIT,
     ) -> list[dict]:
         if min_date:

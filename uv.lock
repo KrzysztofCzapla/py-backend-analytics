@@ -436,7 +436,7 @@ wheels = [
 
 [[package]]
 name = "py-backend-analytics"
-version = "0.5.0"
+version = "0.6.3"
 source = { editable = "." }
 dependencies = [
     { name = "maxminddb" },

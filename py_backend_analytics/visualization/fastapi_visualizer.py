@@ -26,7 +26,12 @@ async def py_backend_analytics_fastapi_visualization(
         name=ANALYTICS_STATIC,
     )
 
-    db_client = await get_db_client(input_data.db_connection_string, input_data.db_type)
+    connection_pool = input_data.db_connection_pool
+    if (attr := input_data.fastapi_state_db_pool_attribute) is not None:
+        connection_pool = getattr(request.app.state, attr, connection_pool)
+    db_client = await get_db_client(
+        input_data.db_connection_string, connection_pool, input_data.db_type
+    )
 
     results = await db_client.get_analytics_summary()
 

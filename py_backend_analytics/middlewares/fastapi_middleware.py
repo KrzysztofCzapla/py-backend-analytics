@@ -1,3 +1,5 @@
+import traceback
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request
 
@@ -38,7 +40,7 @@ class PyBackendAnalyticsFastAPIMiddleware(BaseHTTPMiddleware):
                 await self._db_client.insert_request_info(request_info)
         except Exception as e:
             self._debug(
-                f"Got an error when trying to extract info from the request: {e}"
+                f"Got an error when trying to extract info from the request: {e}. \n{traceback.format_exc()}"
             )
         return await call_next(request)
 

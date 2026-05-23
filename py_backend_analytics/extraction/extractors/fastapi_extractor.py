@@ -18,7 +18,7 @@ class FastAPIExtractor(AbstractExtractor):
             match, scope = route.matches(request.scope)
 
             if match == Match.FULL:
-                page = scope["route"].path
+                page = getattr(scope.get("route", None), "path", None) or page
                 break
         source = request.headers.get("referer", "direct")
         datestamp = datetime.now(timezone.utc)

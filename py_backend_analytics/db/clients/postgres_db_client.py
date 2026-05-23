@@ -74,7 +74,7 @@ class PostgresDBClient(AbstractDBClient):
                     F.LOCATION: r[0],
                     F.PAGE: r[1],
                     F.SOURCE: r[2],
-                    F.DATESTAMP: r[3],
+                    F.DATESTAMP: str(r[3]),
                 }
                 for r in rows
             ]

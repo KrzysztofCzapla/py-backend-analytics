@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from pathlib import Path
 from datetime import date
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 import maxminddb
 
@@ -44,13 +44,23 @@ class IpCountryLookup:
             url = self._url()
             gz = self._dir / GZ_FILE_NAME
 
-            with urlopen(url) as r:
+            req = Request(
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+                    "Accept": "application/octet-stream,*/*",
+                    "Accept-Encoding": "gzip",
+                },
+            )
+
+            with urlopen(req) as r:
                 with open(gz, "wb") as f:
                     f.write(r.read())
 
             with gzip.open(gz, "rb") as f_in:
                 with open(self._mmdb, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
+
         except Exception as e:
             raise Exception(f"Failed to download IP database: {e}")
 

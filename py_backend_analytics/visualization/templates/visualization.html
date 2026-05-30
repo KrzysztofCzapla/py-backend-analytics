@@ -1,78 +1,54 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics Dashboard</title>
+
     <link rel="stylesheet" href="py_backend_analytics/visualization.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <div class="glass-overlay"></div>
+<header>
+    <div class="header-left">
+        <div class="logo">📊</div>
+        <h1>py-backend-analytics</h1>
+    </div>
+    <div class="header-right">
+        <a href="#" id="github-link" target="_blank" class="github-btn">GitHub</a>
+    </div>
+</header>
 
-    <header>
-        <h1>py-backend-analytics <span>🚀</span></h1>
-    </header>
+<main>
+    <div class="period-selector">
+        <button class="period-btn active" data-period="all_time">All Time</button>
+        <button class="period-btn" data-period="last_24h">Last 24 Hours</button>
+        <button class="period-btn" data-period="last_month">Last Month</button>
+        <button class="period-btn" data-period="last_year">Last Year</button>
+    </div>
 
-    <main>
-        <section class="tiles-container">
-            {% for period, data in [('All Time 🌌', all_time), ('Last Year 📅', last_year), ('Last Month 🌙', last_month)] %}
-            <div class="tile">
-                <h2>{{ period }}</h2>
-                <div class="stats-group">
-                    <h3>Top Pages 📄</h3>
-                    <ul>
-                        {% for item in data.top_pages %}
-                        <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="stats-group">
-                    <h3>Top Sources 🔗</h3>
-                    <ul>
-                        {% for item in data.top_sources %}
-                        <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="stats-group">
-                    <h3>Top Countries 🌍</h3>
-                    <ul>
-                        {% for item in data.top_countries %}
-                        <li><span class="val">{{ item.value }}</span> <span class="cnt">{{ item.count }}</span></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            {% endfor %}
-        </section>
+    <div class="graph-card">
+        <div class="graph-header">
+            <h2 id="graph-title">Total Visits • All Time</h2>
+        </div>
 
-        <section class="recent-requests">
-            <h2>Recent Activity ⚡</h2>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Page</th>
-                            <th>Source</th>
-                            <th>Location</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in recent_requests %}
-                        <tr>
-                            <td>{{ req.datestamp[:19] }}</td>
-                            <td><code>{{ req.page }}</code></td>
-                            <td>{{ req.source }}</td>
-                            <td>{{ req.location or '🛰️ Orbital' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+        <canvas id="visitsChart"></canvas>
+    </div>
+
+    <div class="tiles-container" id="stats-tiles"></div>
+</main>
+
+<script>
+window.analyticsData = {
+    all_time: {{ all_time | tojson }},
+    last_24h: {{ last_24h | tojson }},
+    last_month: {{ last_month | tojson }},
+    last_year: {{ last_year | tojson }}
+};
+</script>
+
+<script src="py_backend_analytics/visualization.js"></script>
 </body>
 </html>

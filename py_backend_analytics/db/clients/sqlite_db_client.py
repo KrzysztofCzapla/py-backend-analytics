@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
+from typing import Tuple
 
 from py_backend_analytics.db.clients.abstract_db_client import AbstractDBClient
 from py_backend_analytics.db.constants import (
@@ -10,7 +11,10 @@ from py_backend_analytics.db.constants import (
     UNKNOWN,
     DEFAULT_DB_TIMEOUT,
 )
-from py_backend_analytics.db.models import AnalyticsSummaryFields as F
+from py_backend_analytics.db.models import (
+    AnalyticsSummaryFields as F,
+    AnalyticsSummaryFields,
+)
 from py_backend_analytics.models import RequestInfo
 
 
@@ -28,62 +32,11 @@ class SQLiteDBClient(AbstractDBClient):
 
     async def get_analytics_summary(self) -> dict:
         async with self._get_connection() as conn:
-            now = datetime.now(timezone.utc)
-
-            last_month = (now - timedelta(days=30)).isoformat()
-            last_year = (now - timedelta(days=365)).isoformat()
-
-            all_time = {
-                F.TOP_COUNTRIES: await self._get_top(conn, DBColumns.location),
-                F.TOP_PAGES: await self._get_top(conn, DBColumns.page),
-                F.TOP_SOURCES: await self._get_top(conn, DBColumns.source),
-            }
-
-            month_stats = {
-                F.TOP_COUNTRIES: await self._get_top(
-                    conn, DBColumns.location, last_month
-                ),
-                F.TOP_PAGES: await self._get_top(conn, DBColumns.page, last_month),
-                F.TOP_SOURCES: await self._get_top(conn, DBColumns.source, last_month),
-            }
-
-            year_stats = {
-                F.TOP_COUNTRIES: await self._get_top(
-                    conn, DBColumns.location, last_year
-                ),
-                F.TOP_PAGES: await self._get_top(conn, DBColumns.page, last_year),
-                F.TOP_SOURCES: await self._get_top(conn, DBColumns.source, last_year),
-            }
-
-            recent_query = f"""
-                SELECT
-                    {DBColumns.location},
-                    {DBColumns.page},
-                    {DBColumns.source},
-                    {DBColumns.datestamp}
-                FROM {DB_TABLE_NAME}
-                ORDER BY {DBColumns.datestamp} DESC
-                LIMIT 100
-            """
-
-            cur = await conn.execute(recent_query)
-            recent_rows = await cur.fetchall()
-
-            recent_requests = [
-                {
-                    F.LOCATION: row[0],
-                    F.PAGE: row[1],
-                    F.SOURCE: row[2],
-                    F.DATESTAMP: row[3],
-                }
-                for row in recent_rows
-            ]
-
             return {
-                F.ALL_TIME: all_time,
-                F.LAST_MONTH: month_stats,
-                F.LAST_YEAR: year_stats,
-                F.RECENT_REQUESTS: recent_requests,
+                F.ALL_TIME: await self._get_stats(conn, F.ALL_TIME),
+                F.LAST_MONTH: await self._get_stats(conn, F.LAST_MONTH),
+                F.LAST_YEAR: await self._get_stats(conn, F.LAST_YEAR),
+                F.LAST_24_HOURS: await self._get_stats(conn, F.LAST_24_HOURS),
             }
 
     async def _create_db_table(self):
@@ -115,6 +68,37 @@ class SQLiteDBClient(AbstractDBClient):
             )
             name = await result.fetchone()
             return name is not None
+
+    async def _get_stats(self, conn, time_name: str) -> dict:
+        bucket_str, date = await self._get_bucket_str_and_date(time_name)
+        return {
+            F.TOP_COUNTRIES: await self._get_top(conn, DBColumns.location, date),
+            F.TOP_PAGES: await self._get_top(conn, DBColumns.page, date),
+            F.TOP_SOURCES: await self._get_top(conn, DBColumns.source, date),
+            F.BUCKET: await self._get_bucket(conn, bucket_str, date),
+        }
+
+    @staticmethod
+    async def _get_bucket(
+        conn, bucket_str: str, min_date: str | None = None
+    ) -> list[dict]:
+        where = f"WHERE {DBColumns.datestamp} >= '{min_date}'"
+        query = f"""
+        SELECT {bucket_str}, COUNT(*) as visits
+        FROM {DB_TABLE_NAME}
+        {where if min_date else ''}
+        GROUP BY bucket
+        ORDER BY bucket;
+        """
+        cur = await conn.execute(query)
+        rows = await cur.fetchall()
+        return [
+            {
+                F.VALUE: row[0] or UNKNOWN,
+                F.COUNT: row[1],
+            }
+            for row in rows
+        ]
 
     @staticmethod
     async def _get_top(
@@ -149,6 +133,33 @@ class SQLiteDBClient(AbstractDBClient):
             }
             for row in rows
         ]
+
+    @staticmethod
+    async def _get_bucket_str_and_date(time_name: str) -> Tuple[str, str | None]:
+        now = datetime.now(timezone.utc)
+
+        last_year = (now - timedelta(days=365)).isoformat()
+        last_month = (now - timedelta(days=30)).isoformat()
+        last_24 = (now - timedelta(days=1)).isoformat()
+
+        return {
+            AnalyticsSummaryFields.ALL_TIME: (
+                f"strftime('%Y-%m', {DBColumns.datestamp}) AS bucket",
+                None,
+            ),
+            AnalyticsSummaryFields.LAST_YEAR: (
+                f"strftime('%Y-%m', {DBColumns.datestamp}) AS bucket",
+                last_year,
+            ),
+            AnalyticsSummaryFields.LAST_MONTH: (
+                f"strftime('%m-%d', {DBColumns.datestamp}) AS bucket",
+                last_month,
+            ),
+            AnalyticsSummaryFields.LAST_24_HOURS: (
+                f"strftime('%m-%d %H:00:00', {DBColumns.datestamp}) AS bucket",
+                last_24,
+            ),
+        }[time_name]
 
     @asynccontextmanager
     async def _get_connection(self):

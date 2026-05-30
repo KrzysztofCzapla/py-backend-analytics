@@ -34,6 +34,8 @@ class PostgresDBClient(AbstractDBClient):
 
             last_month = now - timedelta(days=30)
             last_year = now - timedelta(days=365)
+            last_24_hours = now - timedelta(days=1)
+
             all_time = {
                 F.TOP_COUNTRIES: await self._get_top(conn, DBColumns.location),
                 F.TOP_PAGES: await self._get_top(conn, DBColumns.page),
@@ -56,34 +58,21 @@ class PostgresDBClient(AbstractDBClient):
                 F.TOP_SOURCES: await self._get_top(conn, DBColumns.source, last_year),
             }
 
-            rows = await conn.fetch(
-                f"""
-                SELECT
-                    {DBColumns.location},
-                    {DBColumns.page},
-                    {DBColumns.source},
-                    {DBColumns.datestamp}
-                FROM {DB_TABLE_NAME}
-                ORDER BY {DBColumns.datestamp} DESC
-                LIMIT 100
-                """
-            )
-
-            recent_requests = [
-                {
-                    F.LOCATION: r[0],
-                    F.PAGE: r[1],
-                    F.SOURCE: r[2],
-                    F.DATESTAMP: str(r[3]),
-                }
-                for r in rows
-            ]
+            last_24_hours_stats = {
+                F.TOP_COUNTRIES: await self._get_top(
+                    conn, DBColumns.location, last_24_hours
+                ),
+                F.TOP_PAGES: await self._get_top(conn, DBColumns.page, last_24_hours),
+                F.TOP_SOURCES: await self._get_top(
+                    conn, DBColumns.source, last_24_hours
+                ),
+            }
 
             return {
                 F.ALL_TIME: all_time,
                 F.LAST_MONTH: month_stats,
                 F.LAST_YEAR: year_stats,
-                F.RECENT_REQUESTS: recent_requests,
+                F.LAST_24_HOURS: last_24_hours_stats,
             }
 
     async def _create_db_table(self):

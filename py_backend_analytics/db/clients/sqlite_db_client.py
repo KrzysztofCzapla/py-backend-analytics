@@ -39,36 +39,6 @@ class SQLiteDBClient(AbstractDBClient):
                 F.LAST_24_HOURS: await self._get_stats(conn, F.LAST_24_HOURS),
             }
 
-    async def _create_db_table(self):
-        async with self._get_connection() as conn:
-            cur = await conn.cursor()
-            await cur.execute(
-                f"""CREATE TABLE {DB_TABLE_NAME}(
-                        {DBColumns.id} INTEGER PRIMARY KEY,
-                        {DBColumns.location} TEXT NULL,
-                        {DBColumns.page} TEXT NOT NULL,
-                        {DBColumns.source} TEXT NULL,
-                        {DBColumns.datestamp} TEXT NOT NULL
-                ) STRICT"""
-            )
-            await cur.execute(
-                f"""CREATE INDEX {DBColumns.datestamp}{DB_INDEX_SUFFIX}
-                    ON {DB_TABLE_NAME}({DBColumns.datestamp})"""
-            )
-
-    async def _db_table_exists(self) -> bool:
-        async with self._get_connection() as conn:
-            cur = await conn.cursor()
-            result = await cur.execute(
-                f"""
-                SELECT name
-                FROM sqlite_schema
-                WHERE type = 'table' AND name = '{DB_TABLE_NAME}'
-                """
-            )
-            name = await result.fetchone()
-            return name is not None
-
     async def _get_stats(self, conn, time_name: str) -> dict:
         bucket_str, date = await self._get_bucket_str_and_date(time_name)
         return {
@@ -160,6 +130,36 @@ class SQLiteDBClient(AbstractDBClient):
                 last_24,
             ),
         }[time_name]
+
+    async def _create_db_table(self):
+        async with self._get_connection() as conn:
+            cur = await conn.cursor()
+            await cur.execute(
+                f"""CREATE TABLE {DB_TABLE_NAME}(
+                        {DBColumns.id} INTEGER PRIMARY KEY,
+                        {DBColumns.location} TEXT NULL,
+                        {DBColumns.page} TEXT NOT NULL,
+                        {DBColumns.source} TEXT NULL,
+                        {DBColumns.datestamp} TEXT NOT NULL
+                ) STRICT"""
+            )
+            await cur.execute(
+                f"""CREATE INDEX {DBColumns.datestamp}{DB_INDEX_SUFFIX}
+                    ON {DB_TABLE_NAME}({DBColumns.datestamp})"""
+            )
+
+    async def _db_table_exists(self) -> bool:
+        async with self._get_connection() as conn:
+            cur = await conn.cursor()
+            result = await cur.execute(
+                f"""
+                SELECT name
+                FROM sqlite_schema
+                WHERE type = 'table' AND name = '{DB_TABLE_NAME}'
+                """
+            )
+            name = await result.fetchone()
+            return name is not None
 
     @asynccontextmanager
     async def _get_connection(self):

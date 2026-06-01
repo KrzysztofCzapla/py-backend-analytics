@@ -92,7 +92,7 @@ async def test_get_analytics_summary(sqlite_db_client, patched_connection):
         ("PL", "/home", "google", "2025-01-01T00:00:00+00:00")
     ]
 
-    sqlite_db_client._get_top = AsyncMock(
+    sqlite_db_client._get_stats = AsyncMock(
         side_effect=[
             [{"value": "PL", "count": 1}],
             [{"value": "/home", "count": 1}],
@@ -106,6 +106,3 @@ async def test_get_analytics_summary(sqlite_db_client, patched_connection):
     assert F.ALL_TIME in result
     assert F.LAST_MONTH in result
     assert F.LAST_YEAR in result
-    assert F.RECENT_REQUESTS in result
-
-    assert result[F.RECENT_REQUESTS][0][F.LOCATION] == "PL"

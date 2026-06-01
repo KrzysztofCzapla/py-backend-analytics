@@ -124,19 +124,19 @@ class PostgresDBClient(AbstractDBClient):
 
         return {
             AnalyticsSummaryFields.ALL_TIME: (
-                f"date_trunc('month', {DBColumns.datestamp}) AS bucket",
+                f"to_char({DBColumns.datestamp}, 'YYYY-MM') AS bucket",
                 None,
             ),
             AnalyticsSummaryFields.LAST_YEAR: (
-                f"date_trunc('month', {DBColumns.datestamp}) AS bucket",
+                f"to_char({DBColumns.datestamp}, 'YYYY-MM') AS bucket",
                 last_year,
             ),
             AnalyticsSummaryFields.LAST_MONTH: (
-                f"date_trunc('day', {DBColumns.datestamp}) AS bucket",
+                f"to_char({DBColumns.datestamp}, 'MM-DD') AS bucket",
                 last_month,
             ),
             AnalyticsSummaryFields.LAST_24_HOURS: (
-                f"date_trunc('hour', {DBColumns.datestamp}) AS bucket",
+                f"to_char({DBColumns.datestamp}, 'MM-DD HH24') || ':00 UTC' AS bucket",
                 last_24,
             ),
         }[time_name]
